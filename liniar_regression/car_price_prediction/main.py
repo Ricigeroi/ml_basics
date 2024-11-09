@@ -7,6 +7,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.svm import SVR
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder
 
 
 # loading data from .csv into pandas dataframe
@@ -22,6 +23,13 @@ dataset = dataset.dropna()
 
 def preprocess_dataframe(df):
     df = df.rename(columns={'mileage': 'consumption'})
+
+    # ordinal_encoding owner info
+    owner_encoder = OrdinalEncoder(categories=[
+        ['Test Drive Car', 'First Owner', 'Second Owner', 'Third Owner', 'Fourth & Above Owner']
+    ])
+    df['owner'] = owner_encoder.fit_transform(df[['owner']].values)
+
     return df
 
 dataset = preprocess_dataframe(dataset)
@@ -37,4 +45,4 @@ x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_
 
 
 print(x_train.columns)
-print(x_test[['year', 'km_driven', 'consumption', 'engine', 'owner']])
+print(x_train[['year', 'km_driven', 'consumption', 'engine', 'owner']].head(20))
