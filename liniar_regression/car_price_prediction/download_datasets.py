@@ -1,6 +1,6 @@
 import kagglehub
 
 # Download latest version
-path = kagglehub.dataset_download("nehalbirla/vehicle-dataset-from-cardekho")
+path = kagglehub.dataset_download("hellbuoy/car-price-prediction")
 
 print("Path to dataset files:", path)
