@@ -3,6 +3,7 @@ import pandas as pd
 from matplotlib.pyplot import figure
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.linear_model import LinearRegression
+from sklearn.svm import SVR
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
@@ -32,6 +33,17 @@ test_df = pd.read_csv('datasets/df_test.csv')
 # looking for empty entries
 # print(train_df.isnull().sum())
 
+# visualization of features
+
+fig, axs = plt.subplots(2, 2)
+
+train_df.plot(kind='scatter', s=0.2, x='living_in_m2', y='price', ax=axs[0, 0], title='living_in_m2 vs price')
+train_df.plot(kind='scatter', s=0.2, x='bedrooms', y='price', ax=axs[0, 1], title='bedrooms vs price')
+train_df.plot(kind='scatter', s=0.2, x='grade', y='price', ax=axs[1, 0], title='grade vs price')
+train_df.plot(kind='scatter', s=0.2, x='quartile_zone', y='price', ax=axs[1, 1], title='quartile_zone vs price')
+plt.tight_layout()
+plt.show()
+
 def preprocess_dataframe(df):
     # simplify date column to just year
     df['date'] = df['date'].str[:4]
@@ -49,23 +61,14 @@ def preprocess_dataframe(df):
     min_max_scaler = MinMaxScaler()
     df['living_in_m2'] = min_max_scaler.fit_transform(df[['living_in_m2']])
 
+    df['grade_of_meter'] = df['living_in_m2'] * df['grade']
+
     return df
 
 train_df = preprocess_dataframe(train_df)
 
-# visualization of features
-
-fig, axs = plt.subplots(2, 2)
-
-train_df.plot(kind='scatter', s=0.2, x='living_in_m2', y='price', ax=axs[0, 0], title='living_in_m2 vs price')
-train_df.plot(kind='scatter', s=0.2, x='bedrooms', y='price', ax=axs[0, 1], title='bedrooms vs price')
-train_df.plot(kind='scatter', s=0.2, x='grade', y='price', ax=axs[1, 0], title='grade vs price')
-train_df.plot(kind='scatter', s=0.2, x='quartile_zone', y='price', ax=axs[1, 1], title='quartile_zone vs price')
-plt.tight_layout()
-plt.show()
 
 # building model
-
 model = LinearRegression()
 
 # all columns except price
