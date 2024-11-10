@@ -4,8 +4,7 @@ from matplotlib.pyplot import figure
 from sklearn.inspection import permutation_importance
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
-from sklearn.linear_model import LinearRegression
-from sklearn.svm import SVR
+from sklearn.linear_model import LinearRegression, Lasso, Ridge, ElasticNet
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder
@@ -108,6 +107,10 @@ def preprocess_dataframe(df):
 
     return df.drop(columns=['torque', 'name', 'model'])
 
+def scale_price(df):
+    df = df / 1000
+    return df
+
 dataset = preprocess_dataframe(dataset)
 
 # dividing features from target variable
@@ -117,6 +120,8 @@ y = dataset['selling_price']
 # dividing dataframe to train and test parts
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 
+# divide price by 1000
+y_train, y_test = scale_price(y_train), scale_price(y_test)
 
 print(x_train.columns)
 
@@ -131,7 +136,7 @@ mae = mean_absolute_error(y_test, y_pred)
 mse = mean_squared_error(y_test, y_pred)
 r2 = r2_score(y_test, y_pred)
 
-print("Mean Absolute Error (MAE):", mae)
-print("Mean Squared Error (MSE):", mse)
-print("R-squared (R2):", r2)
+print(f'Mean Absolute Error (MAE): {mae:.2f}k')
+print(f'Mean Squared Error (MSE): {mse:.2f}')
+print(f'R-squared (R2): {r2:.4f}')
 
