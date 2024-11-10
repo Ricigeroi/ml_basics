@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from matplotlib.pyplot import figure
+from sklearn.inspection import permutation_importance
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.linear_model import LinearRegression
@@ -63,7 +64,9 @@ def preprocess_dataframe(df):
     # df['torque'] = df['torque'].str.split(r'(?i)nm').str[0].str.strip()
 
     # format name -> make + model
-    df['name'] = df['name'].str.split(' ').str[:2].str.join(' ')
+    df['make'] = df['name'].str.split(' ').str[0]
+    df['model'] = df['name'].str.split(' ').str[1]
+
     # df['trim'] = df['name'].str.split(' ').str[-1]
 
     # format consumption
@@ -86,15 +89,24 @@ def preprocess_dataframe(df):
     engine_scaler = MinMaxScaler()
     df['engine'] = engine_scaler.fit_transform(df[['engine']])
 
-    # one-hot encoding for name
-    name_encoder = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
-    name_encoded = name_encoder.fit_transform(df[['name']])
-    name_encoded_df = pd.DataFrame(name_encoded, columns=name_encoder.get_feature_names_out(['name']))
+    # one-hot encoding for make
+    make_encoder = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
+    make_encoded = make_encoder.fit_transform(df[['make']])
+    make_encoded_df = pd.DataFrame(make_encoded, columns=make_encoder.get_feature_names_out(['make']))
     df.reset_index(drop=True, inplace=True)
-    name_encoded_df.reset_index(drop=True, inplace=True)
-    df = pd.concat([df, name_encoded_df], axis=1).drop(columns=['name'])
+    make_encoded_df.reset_index(drop=True, inplace=True)
+    df = pd.concat([df, make_encoded_df], axis=1).drop(columns=['make'])
 
-    return df.drop(columns=['torque'])
+    # one-hot encode for model
+    model_encoder = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
+    model_encoded = model_encoder.fit_transform(df[['model']])
+    model_encoded_df = pd.DataFrame(model_encoded, columns=model_encoder.get_feature_names_out(['model']))
+    df.reset_index(drop=True, inplace=True)
+    model_encoded_df.reset_index(drop=True, inplace=True)
+    # df = pd.concat([df, model_encoded_df], axis=1).drop(columns=['model'])
+
+
+    return df.drop(columns=['torque', 'name', 'model'])
 
 dataset = preprocess_dataframe(dataset)
 
@@ -112,6 +124,7 @@ print(x_train.columns)
 model = LinearRegression()
 model.fit(x_train, y_train)
 
+# noinspection DuplicatedCode
 y_pred = model.predict(x_test)
 
 mae = mean_absolute_error(y_test, y_pred)
