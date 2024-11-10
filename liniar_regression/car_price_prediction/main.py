@@ -38,7 +38,37 @@ def preprocess_dataframe(df):
     # reset indexes -- very important thing! I spent fucking hour fighting with this problem
     df.reset_index(drop=True, inplace=True)
     fuel_encoded_df.reset_index(drop=True, inplace=True)
-    df = pd.concat([df, fuel_encoded_df], axis=1)
+    df = pd.concat([df, fuel_encoded_df], axis=1).drop(columns=['fuel'])
+
+    # one-hot encoding for transmission
+    gearbox_encoder = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
+    gearbox_encoded = gearbox_encoder.fit_transform(df[['transmission']])
+    gearbox_encoded_df = pd.DataFrame(gearbox_encoded, columns=gearbox_encoder.get_feature_names_out(['transmission']))
+    df.reset_index(drop=True, inplace=True)
+    gearbox_encoded_df.reset_index(drop=True, inplace=True)
+    df = pd.concat([df, gearbox_encoded_df], axis=1).drop(columns=['transmission'])
+
+    # one-hot encoding for seller type
+    seller_encoder = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
+    seller_encoded = seller_encoder.fit_transform(df[['seller_type']])
+    seller_encoded_df = pd.DataFrame(seller_encoded, columns=seller_encoder.get_feature_names_out(['seller_type']))
+    df.reset_index(drop=True, inplace=True)
+    seller_encoded_df.reset_index(drop=True, inplace=True)
+    df = pd.concat([df, seller_encoded_df], axis=1).drop(columns=['seller_type'])
+
+    # format max_power
+    df['max_power'] = df['max_power'].str.split(' ').str[0]
+
+    # format torque
+    df['torque'] = df['torque'].str.split(r'(?i)nm').str[0].str.strip()
+
+    # format name -> make, model, trim (комлпектация)
+    df['make'] = df['name'].str.split(' ').str[0]
+    df['model'] = df['name'].str.split(' ').str[1]
+    df['trim'] = df['name'].str.split(' ').str[-1]
+    df = df.drop(columns=['name'])
+
+    # scaling
 
 
     return df
@@ -56,4 +86,6 @@ x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_
 
 
 print(x_train.columns)
+
+print(x_test[['make', 'model', 'trim']])
 
