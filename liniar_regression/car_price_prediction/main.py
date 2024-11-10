@@ -30,6 +30,17 @@ def preprocess_dataframe(df):
     ])
     df['owner'] = owner_encoder.fit_transform(df[['owner']].values)
 
+    # one-hot encoding for fuel type
+    fuel_encoder = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
+    fuel_encoded = fuel_encoder.fit_transform(df[['fuel']])
+    fuel_encoded_df = pd.DataFrame(fuel_encoded, columns=fuel_encoder.get_feature_names_out(['fuel']))
+
+    # reset indexes -- very important thing! I spent fucking hour fighting with this problem
+    df.reset_index(drop=True, inplace=True)
+    fuel_encoded_df.reset_index(drop=True, inplace=True)
+    df = pd.concat([df, fuel_encoded_df], axis=1)
+
+
     return df
 
 dataset = preprocess_dataframe(dataset)
@@ -45,4 +56,4 @@ x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_
 
 
 print(x_train.columns)
-print(x_train[['year', 'km_driven', 'consumption', 'engine', 'owner']].head(20))
+
