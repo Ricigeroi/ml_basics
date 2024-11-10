@@ -111,11 +111,22 @@ def scale_price(df):
     df = df / 1000
     return df
 
+# visualization
+fig, axs = plt.subplots(2, 2, figsize=(10, 8))
+
+dataset.plot(kind='scatter', x='km_driven', y='selling_price', s=20, ax=axs[0, 0], title='km_driven vs price')
+dataset.plot(kind='scatter', x='fuel', y='selling_price', s=20, ax=axs[0, 1], title='fuel vs price')
+dataset.plot(kind='scatter', x='year', y='selling_price', s=20, ax=axs[1, 0], title='year vs price')
+dataset.plot(kind='scatter', x='seats', y='selling_price', s=20, ax=axs[1, 1], title='seats vs price')
+plt.tight_layout()
+plt.show()
+
 dataset = preprocess_dataframe(dataset)
 
 # dividing features from target variable
 x = dataset.drop(columns=['selling_price'])
 y = dataset['selling_price']
+
 
 # dividing dataframe to train and test parts
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
