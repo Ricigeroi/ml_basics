@@ -60,18 +60,41 @@ def preprocess_dataframe(df):
     df['max_power'] = df['max_power'].str.split(' ').str[0]
 
     # format torque
-    df['torque'] = df['torque'].str.split(r'(?i)nm').str[0].str.strip()
+    # df['torque'] = df['torque'].str.split(r'(?i)nm').str[0].str.strip()
 
-    # format name -> make, model, trim (комлпектация)
-    df['make'] = df['name'].str.split(' ').str[0]
-    df['model'] = df['name'].str.split(' ').str[1]
-    df['trim'] = df['name'].str.split(' ').str[-1]
-    df = df.drop(columns=['name'])
+    # format name -> make + model
+    df['name'] = df['name'].str.split(' ').str[:2].str.join(' ')
+    # df['trim'] = df['name'].str.split(' ').str[-1]
+
+    # format consumption
+    df['consumption'] = df['consumption'].str.split(' ').str[0]
+
+    # format engine
+    df['engine'] = df['engine'].str.split(' ').str[0]
 
     # scaling
 
+    # scale year = year - 2010; example 2014 = 4, 2020 = 10
+    df['year'] = df['year'] - 2010
 
-    return df
+    consumption_scaler = MinMaxScaler()
+    df['consumption'] = consumption_scaler.fit_transform(df[['consumption']])
+
+    km_scaler = MinMaxScaler()
+    df['km_driven'] = km_scaler.fit_transform(df[['km_driven']])
+
+    engine_scaler = MinMaxScaler()
+    df['engine'] = engine_scaler.fit_transform(df[['engine']])
+
+    # one-hot encoding for name
+    name_encoder = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
+    name_encoded = name_encoder.fit_transform(df[['name']])
+    name_encoded_df = pd.DataFrame(name_encoded, columns=name_encoder.get_feature_names_out(['name']))
+    df.reset_index(drop=True, inplace=True)
+    name_encoded_df.reset_index(drop=True, inplace=True)
+    df = pd.concat([df, name_encoded_df], axis=1).drop(columns=['name'])
+
+    return df.drop(columns=['torque'])
 
 dataset = preprocess_dataframe(dataset)
 
@@ -83,9 +106,19 @@ y = dataset['selling_price']
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 
 
-
-
 print(x_train.columns)
 
-print(x_test[['make', 'model', 'trim']])
+# model building
+model = LinearRegression()
+model.fit(x_train, y_train)
+
+y_pred = model.predict(x_test)
+
+mae = mean_absolute_error(y_test, y_pred)
+mse = mean_squared_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
+
+print("Mean Absolute Error (MAE):", mae)
+print("Mean Squared Error (MSE):", mse)
+print("R-squared (R2):", r2)
 
