@@ -6,7 +6,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.linear_model import LinearRegression, Lasso, Ridge, ElasticNet, LogisticRegression
 import matplotlib.pyplot as plt
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, accuracy_score
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, accuracy_score, confusion_matrix, \
+    precision_score, recall_score, f1_score
 from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder
 
 
@@ -105,6 +106,8 @@ def preprocess_dataframe(df):
     survival_months_scaler = MinMaxScaler()
     df['Survival Months'] = survival_months_scaler.fit_transform(df[['Survival Months']])
 
+    # format State
+    df['Status'] = df['Status'].map({'Alive': 0, 'Dead': 1})
 
     return df.drop(columns=[
         'Race',
@@ -133,6 +136,14 @@ y_pred = model.predict(x_test)
 
 # accuracy test
 accuracy = accuracy_score(y_test, y_pred)
+cm = confusion_matrix(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
 
+print(f'Precision: {precision}')
+print(f'Recall: {recall}')
+print(f'F1 Score: {f1}')
+print(f'Confusion Matrix:\n{cm}')
 print(f'Accuracy: {accuracy}')
 
