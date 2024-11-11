@@ -4,9 +4,9 @@ from matplotlib.pyplot import figure
 from sklearn.inspection import permutation_importance
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
-from sklearn.linear_model import LinearRegression, Lasso, Ridge, ElasticNet
+from sklearn.linear_model import LinearRegression, Lasso, Ridge, ElasticNet, LogisticRegression
 import matplotlib.pyplot as plt
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, accuracy_score
 from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder
 
 
@@ -84,9 +84,55 @@ def preprocess_dataframe(df):
         ],
         axis=1
     )
-    return df
+
+    # format Grade
+    df['Grade'] = df['Grade'].replace(' anaplastic; Grade IV', 4)
+
+    # scaling
+    # scale age
+    age_scaler = MinMaxScaler()
+    df['Age'] = age_scaler.fit_transform(df[['Age']])
+
+    # scale tumor size
+    tumor_size_scaler = MinMaxScaler()
+    df['Tumor Size'] = tumor_size_scaler.fit_transform(df[['Tumor Size']])
+
+    # scale Reginol Node Positive
+    reginol_node_scaler = MinMaxScaler()
+    df['Reginol Node Positive'] = reginol_node_scaler.fit_transform(df[['Reginol Node Positive']])
+
+    # scale Survival Months
+    survival_months_scaler = MinMaxScaler()
+    df['Survival Months'] = survival_months_scaler.fit_transform(df[['Survival Months']])
+
+
+    return df.drop(columns=[
+        'Race',
+        'Marital Status',
+        'A Stage',
+        'Estrogen Status',
+        'Progesterone Status',
+    ])
 
 
 dataset = preprocess_dataframe(dataset)
-print(dataset.columns)
-print(dataset[['Estrogen Status', 'Estrogen Status_Positive', 'Estrogen Status_Negative']].head(20))
+
+
+# dividing features from target variable
+x = dataset.drop(columns=['Status'])
+y = dataset['Status']
+
+# dividing dataframe to train and test parts
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
+
+# model building
+model = LogisticRegression(max_iter=500)
+model.fit(x_train, y_train)
+
+y_pred = model.predict(x_test)
+
+# accuracy test
+accuracy = accuracy_score(y_test, y_pred)
+
+print(f'Accuracy: {accuracy}')
+
