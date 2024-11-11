@@ -15,7 +15,7 @@ dataset = pd.read_csv('datasets/car details v3.csv')
 
 
 # looking for empty entries
-# print(train_df.isnull().sum())
+# print(dataset.isnull().sum())
 
 # remove uncompleted rows (about 230 from total of 7900)
 dataset = dataset.dropna()

@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from matplotlib.pyplot import figure
+from numpy.core.function_base import linspace
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.linear_model import LinearRegression
 from sklearn.svm import SVR
@@ -13,7 +14,7 @@ train_df = pd.read_csv('datasets/df_train.csv')
 test_df = pd.read_csv('datasets/df_test.csv')
 
 """
-    We have 14 columns in the dataset, as it follows:
+    We have 14 columns in the datasets, as it follows:
         date: Date of the home sale
         price: Price of each home sold
         bedrooms: Number of bedrooms
@@ -94,3 +95,12 @@ print("Mean Absolute Error (MAE):", mae)
 print("Mean Squared Error (MSE):", mse)
 print("R-squared (R2):", r2)
 
+
+plt.figure(figsize=(10, 6))
+plt.plot(range(len(y_test)), y_test, color='blue', label="Actual Prices")
+plt.plot(range(len(y_pred)), y_pred, color='red', label="Predicted Prices")
+plt.xlabel("Sample index")
+plt.ylabel("Price")
+plt.title("Actual vs Predicted Prices")
+plt.legend()
+plt.show()
